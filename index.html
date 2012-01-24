@@ -1,0 +1,67 @@
+<?xml version="1.1" standalone="no"?>
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="lib/jquery-1.7.1.js" type="text/javascript" language="javascript" charset="utf-8" ></script>
+        <script type="text/javascript" language="javascript" charset="utf-8">
+        // <![CDATA[
+            
+            // due to lazyness I put all the code into this function
+            $(function() {
+                var latestComic = 0;
+                var currentComic = 1;
+                var catCount = 0;
+                var getNextComicFunction;
+                
+                
+                var containsCat = function(string) {
+                    return /(\bcat\b)|(\bkitten\b)|(\bcats\b)|(\bkittens\b)/i.test(string);
+                }
+                
+
+                // search for the words cat and kitten
+                // then proced to the next comic until we get the latest
+                // beware of the recursion
+                getNextComicFunction = function(data) {
+                    console.log("got " + data.num);
+                    if( containsCat(data.title)      ||
+                        containsCat(data.news)       ||
+                        containsCat(data.transcript) ||
+                        containsCat(data.alt)) {
+                        
+                        catCount++;
+                        $("#catCount").text(catCount);
+                        console.log("cat no. "+ catCount +" found in comic" + data.num);
+                    }
+                    
+                    $("#currentComic").text(currentComic);
+                    currentComic++;
+                    
+                    // there is no xkcd num 404
+                    if(currentComic == 404) {
+                        currentComic++;
+                    }
+                    
+                    if (currentComic <= latestComic) {
+                        $.getJSON("http://www.xkcd.org/"+ currentComic +"/info.0.json", getNextComicFunction);
+                    }
+                }
+                
+                
+                // Get latest comic, than start getting the old once
+                $.getJSON("http://www.xkcd.org/info.0.json", function(data) {
+                    
+                    console.log("max comics:" + data.num);
+                    latestComic = parseInt(data.num);
+                    
+                    $.getJSON("http://www.xkcd.org/"+ currentComic +"/info.0.json", getNextComicFunction);
+                });
+            });
+        // ]]>
+        </script>
+    </head>
+    <body>
+        Cats: <span id="catCount"></span><br/>
+        Current Comic:<span id="currentComic"></span>
+    </body>
+</html>
